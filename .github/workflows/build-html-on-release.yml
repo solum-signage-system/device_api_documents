@@ -1,0 +1,42 @@
+name: Build HTML (Manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-html:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+
+      - name: Build HTML outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+
+          # API_Doc.md -> dist/API_Docs.html
+          pandoc API_Doc.md -f gfm -o dist/API_Docs.html --standalone \
+            --css assets/github-markdown.css \
+            -V body-class=markdown-body
+
+          # README.md -> dist/README.html
+          pandoc README.md -f gfm -o dist/README.html --standalone \
+            --css assets/github-markdown.css \
+            -V body-class=markdown-body
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-export
+          path: dist/*
