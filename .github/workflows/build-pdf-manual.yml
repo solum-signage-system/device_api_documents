@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -49,3 +49,13 @@ jobs:
         with:
           name: pdf-export
           path: dist/*
+
+      - name: Publish Release (PDF release)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: pdf-${{ github.run_number }}
+          name: PDF release
+          files: |
+            dist/API_Docs.pdf
+            dist/README.pdf
+
