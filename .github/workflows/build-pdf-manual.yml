@@ -1,0 +1,51 @@
+name: Build PDF (md-to-pdf) - Manual
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          npm i -D md-to-pdf
+
+      - name: Create md-to-pdf config (no-sandbox)
+        run: |
+          cat > md-to-pdf.config.js <<'EOF'
+          module.exports = {
+            body_class: "markdown-body",
+            launch_options: {
+              args: ["--no-sandbox", "--disable-setuid-sandbox"]
+            }
+          };
+          EOF
+
+      - name: Generate PDFs
+        run: |
+          npx md-to-pdf API_Doc.md --config-file md-to-pdf.config.js
+          npx md-to-pdf README.md  --config-file md-to-pdf.config.js
+
+          mkdir -p dist
+          ls -la
+          mv API_Doc.pdf dist/API_Docs.pdf || true
+          mv README.pdf dist/README.pdf || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-export
+          path: dist/*
