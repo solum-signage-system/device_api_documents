@@ -15,9 +15,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install pandoc
+        shell: bash
         run: |
+          set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y pandoc
+
+      - name: Prepare wrapper html
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist .pandoc
+          printf '<div class="markdown-body">\n' > .pandoc/before.html
+          printf '\n</div>\n' > .pandoc/after.html
 
       - name: Build HTML outputs
         shell: bash
@@ -27,28 +37,35 @@ jobs:
 
           pandoc API_Doc.md -f gfm -o dist/API_Docs.html --standalone \
             --css assets/github-markdown.css \
-            -V body-class=markdown-body \
-            --resource-path=.:images
+            --include-before-body .pandoc/before.html \
+            --include-after-body .pandoc/after.html \
+            -V header-includes='<style>
+              .markdown-body{max-width:900px;margin:40px auto;padding:0 16px;}
+            </style>' \
+            --metadata pagetitle="Document" \
+            --resource-path=.:images \
+            --no-highlight
 
           pandoc README.md -f gfm -o dist/README.html --standalone \
             --css assets/github-markdown.css \
-            -V body-class=markdown-body \
-            --resource-path=.:images
+            --include-before-body .pandoc/before.html \
+            --include-after-body .pandoc/after.html \
+            -V header-includes='<style>
+              .markdown-body{max-width:900px;margin:40px auto;padding:0 16px;}
+            </style>' \
+            --metadata pagetitle="Document" \
+            --resource-path=.:images \
+            --no-highlight
 
-      - name: Copy static files (images, css)
+      - name: Copy images
         shell: bash
         run: |
           set -euo pipefail
-
-          # copy images if exists
           [ -d images ] && cp -r images dist/ || true
-
-          # copy css for standalone dist viewing
-          mkdir -p dist/assets
-          [ -f assets/github-markdown.css ] && cp -f assets/github-markdown.css dist/assets/ || true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: html-export
           path: dist/*
+``
