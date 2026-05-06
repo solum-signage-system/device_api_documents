@@ -39,9 +39,7 @@ jobs:
             --css assets/github-markdown.css \
             --include-before-body .pandoc/before.html \
             --include-after-body .pandoc/after.html \
-            -V header-includes='<style>
-              .markdown-body{max-width:900px;margin:40px auto;padding:0 16px;}
-            </style>' \
+            -V header-includes='<style>.markdown-body{max-width:900px;margin:40px auto;padding:0 16px;}.markdown-body h2{font-size:1.5em;}.markdown-body h3{font-size:1.35em;font-weight:600;}.markdown-body h4{font-size:1.1em;}</style>' \
             --metadata pagetitle="Document" \
             --resource-path=.:images \
             --no-highlight
@@ -50,9 +48,7 @@ jobs:
             --css assets/github-markdown.css \
             --include-before-body .pandoc/before.html \
             --include-after-body .pandoc/after.html \
-            -V header-includes='<style>
-              .markdown-body{max-width:900px;margin:40px auto;padding:0 16px;}
-            </style>' \
+            -V header-includes='<style>.markdown-body{max-width:900px;margin:40px auto;padding:0 16px;}.markdown-body h2{font-size:1.5em;}.markdown-body h3{font-size:1.35em;font-weight:600;}.markdown-body h4{font-size:1.1em;}</style>' \
             --metadata pagetitle="Document" \
             --resource-path=.:images \
             --no-highlight
@@ -68,4 +64,3 @@ jobs:
         with:
           name: html-export
           path: dist/*
-
