@@ -20,22 +20,32 @@ jobs:
           sudo apt-get install -y pandoc
 
       - name: Build HTML outputs
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p dist
-      
+
           pandoc API_Doc.md -f gfm -o dist/API_Docs.html --standalone \
             --css assets/github-markdown.css \
             -V body-class=markdown-body \
             --resource-path=.:images
-      
+
           pandoc README.md -f gfm -o dist/README.html --standalone \
             --css assets/github-markdown.css \
             -V body-class=markdown-body \
             --resource-path=.:images
-      
-      - name: Copy images
+
+      - name: Copy static files (images, css)
+        shell: bash
         run: |
-          cp -r images dist/
+          set -euo pipefail
+
+          # copy images if exists
+          [ -d images ] && cp -r images dist/ || true
+
+          # copy css for standalone dist viewing
+          mkdir -p dist/assets
+          [ -f assets/github-markdown.css ] && cp -f assets/github-markdown.css dist/assets/ || true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
