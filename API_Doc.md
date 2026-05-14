@@ -8,6 +8,7 @@ This guide provides comprehensive documentation for the SOLUM DeviceAPI library,
 | Version | Date       | Changes |
 |--------|-----------|---------|
 | 1.0.0  | 2026-05-06 | Initial release |
+| 1.0.1 | 2026-05-14 | Synced API docs: added missing non-deprecated methods, expanded `Schedule` entries, clarified `Package.install` and `requestGrantSystemAccess`, and removed internal implementation references. |
 
 ## Table of Contents
 1. [Activity Class](#1-activity-class)
@@ -857,6 +858,60 @@ Schedule.add(context, ScheduleType.REBOOT, "DailyReboot", 24, ChronoUnit.HOURS);
 ```java
 // Java
 Schedule.remove(context, 101); // Assumes 101 is a valid schedule ID
+```
+
+### `list`
+- **Summary:** Returns all currently registered schedules from the system service.
+- **Behavioral Detail:**
+    - **System Impact:** Read-only operation; it does not create, modify, or remove schedules.
+    - **Internal Mechanism:** Calls `getSchedules(Version.get())` through the manager-service binder and returns `List<ScheduleElement>`.
+    - **Operational Note:** Returned entries reflect the service-side schedule store at call time.
+- **Library Level:** `v0.1`
+- **Parameters:**
+
+| Parameter | Type | Necessity | Description |
+| :--- | :--- | :--- | :--- |
+| `context` | `Context` | `[Mandatory]` | Caller context used to access the manager-service binder. |
+
+- **Returns:** `List<ScheduleElement>` - Snapshot list of schedules currently known by the service.
+
+- **Exceptions:**
+
+| Exception | Condition |
+| :--- | :--- |
+| `RuntimeException` | If IPC/service communication fails while fetching schedules. |
+
+- **Example:**
+```java
+// Java
+List<ScheduleElement> schedules = Schedule.list(context);
+```
+
+### `ScheduleElement` (Related Type)
+- **Summary:** Data model returned by `Schedule.list(...)` that represents one registered schedule entry.
+- **Behavioral Detail:**
+    - **Type Source:** Defined in `interface` module as `com.solum.display.system.ScheduleElement` and transferred through Parcelable IPC.
+    - **Operational Note:** Values represent the schedule state stored by the service at retrieval time.
+- **Core Fields / Getters:**
+
+| Field (Getter) | Type | Description |
+| :--- | :--- | :--- |
+| `id` (`getId()`) | `long` | Unique identifier of the schedule entry. |
+| `type` (`getType()`) | `ScheduleType` | Scheduled action type (for example reboot or power-off actions). |
+| `nickname` (`getNickname()`) | `String?` | Optional user-defined label for identifying the schedule. |
+| `executeTime` (`getExecuteTime()`) | `long` | Execution timestamp (epoch millis). `Long.MAX_VALUE` may be used as an initial placeholder before assignment. |
+
+- **Library Level:** `v0.1`
+
+- **Usage Example:**
+```java
+List<ScheduleElement> schedules = Schedule.list(context);
+for (ScheduleElement item : schedules) {
+    long id = item.getId();
+    ScheduleType type = item.getType();
+    String nickname = item.getNickname();
+    long executeTime = item.getExecuteTime();
+}
 ```
 
 ---
