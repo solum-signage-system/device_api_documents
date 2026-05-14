@@ -824,7 +824,8 @@ Automation of future system actions based on time or delay.
 ### `add`
 - **Summary:** Schedules a system-level action for a future time or recurring interval.
 - **Behavioral Detail:** 
-    - **Mechanism:** Leverages an internal persistent database and system alarms to ensure schedules survive reboots. 
+    - **Mechanism:** Registers runtime schedule entries through the service and system alarm integration.
+    - **Persistence:** Non-persistent. Registered schedules are cleared on reboot and must be re-registered after restart.
     - **Environmental Constraint:** If the device's system time or time zone is changed, existing schedules must be manually re-verified by the application as they may trigger at unexpected times.
 - **Library Level:** `v0.1`
 - **Parameters:**
