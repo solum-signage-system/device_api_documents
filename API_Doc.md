@@ -826,6 +826,8 @@ Automation of future system actions based on time or delay.
 - **Behavioral Detail:** 
     - **Mechanism:** Registers runtime schedule entries through the service and system alarm integration.
     - **Persistence:** Non-persistent. Registered schedules are cleared on reboot and must be re-registered after restart.
+    - **Expiration Broadcast:** When a schedule expires, the system sends `com.solum.intent.action.expire` and `com.solum.intent.action.expire.{ScheduleType}` with extras: `id`, `schedule_type`, `time`, `nickname`.
+    - **Nickname Management:** To avoid duplicates, use a unique nickname per logical schedule. Before adding a new one, it is recommended to query `Schedule.list(...)`, remove existing entries with the same nickname, then call `Schedule.add(...)`.
     - **Environmental Constraint:** If the device's system time or time zone is changed, existing schedules must be manually re-verified by the application as they may trigger at unexpected times.
 - **Library Level:** `v0.1`
 - **Parameters:**
@@ -842,6 +844,59 @@ Automation of future system actions based on time or delay.
 ```java
 // Java: Schedule a reboot in 24 hours
 Schedule.add(context, ScheduleType.REBOOT, "DailyReboot", 24, ChronoUnit.HOURS);
+```
+
+### `Schedule Expiration Broadcast` (Usage Example)
+- **Summary:** Receives schedule expiration events via `BroadcastReceiver`.
+- **Behavioral Detail:**
+    - **Global Action:** `com.solum.intent.action.expire`
+    - **Type-Specific Action:** `com.solum.intent.action.expire.{ScheduleType}`
+    - **Extras:** `id` (`long`), `schedule_type` (`String`), `time` (`long`), `nickname` (`String`)
+    - **Recommendation:** Use a unique nickname and replace existing schedules with the same nickname before adding a new one.
+
+- **Example (Kotlin):**
+```kotlin
+fun replaceScheduleByNickname(
+    context: Context,
+    type: ScheduleType,
+    nickname: String,
+    dateTime: ZonedDateTime
+): Long {
+    // 1) Remove existing schedules that share the same nickname
+    Schedule.list(context)
+        .filter { it.getNickname() == nickname }
+        .forEach { Schedule.remove(context, it.getId()) }
+
+    // 2) Add the new schedule
+    return Schedule.add(context, type, nickname, dateTime)
+}
+
+fun registerScheduleExpiredReceiver(context: Context): BroadcastReceiver {
+    val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val id = intent.getLongExtra("id", -1L)
+            val type = intent.getStringExtra("schedule_type")
+            val time = intent.getLongExtra("time", -1L)
+            val nickname = intent.getStringExtra("nickname")
+
+            Log.i("ScheduleBR", "expired id=$id type=$type time=$time nickname=$nickname")
+        }
+    }
+
+    val filter = IntentFilter().apply {
+        addAction("com.solum.intent.action.expire")
+        ScheduleType.values().forEach { type ->
+            addAction("com.solum.intent.action.expire.$type")
+        }
+    }
+
+    context.registerReceiver(receiver, filter)
+    return receiver
+}
+
+fun unregisterScheduleExpiredReceiver(context: Context, receiver: BroadcastReceiver) {
+    context.unregisterReceiver(receiver)
+}
 ```
 
 ### `remove`
