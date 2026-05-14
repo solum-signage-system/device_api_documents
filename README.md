@@ -29,12 +29,6 @@ The DeviceAPI library provides access to the following system-level capabilities
 - Requires system-level privileges
 - Some APIs may vary depending on platform/firmware
 
-| Category | Scope |
-| :--- | :--- |
-| Runtime | Android-based SOLUM signage devices |
-| Privilege | System-level access required |
-| Availability | Varies by API and platform/firmware |
-
 ---
 
 ## Getting Started
