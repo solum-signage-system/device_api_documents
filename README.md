@@ -4,15 +4,16 @@ This repository contains the official documentation for the SOLUM DeviceAPI libr
 
 ---
 
-## 📄 API Documentation
+## API Documentation
 
-👉 https://github.com/solum-signage-system/device_api_documents/blob/main/API_Doc.md
+View full API documentation:
+https://github.com/solum-signage-system/device_api_documents/blob/main/API_Doc.md
 
 ---
 
-## 📌 Overview
+## Overview
 
-The DeviceAPI library enables applications to access privileged system features such as:
+The DeviceAPI library provides access to the following system-level capabilities:
 
 - Device management
 - Display control
@@ -20,15 +21,25 @@ The DeviceAPI library enables applications to access privileged system features 
 - Input handling
 - System configuration
 
-It is designed for kiosk and digital signage environments requiring strict control over device behavior.
+---
+
+## Compatibility
+
+- Works only on SOLUM platform
+- Requires system-level privileges
+- Some APIs may vary depending on platform/firmware
+
+| Category | Scope |
+| :--- | :--- |
+| Runtime | Android-based SOLUM signage devices |
+| Privilege | System-level access required |
+| Availability | Varies by API and platform/firmware |
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Add GitHub Package Repository
-
-Add the following to your `settings.gradle.kts`:
 
 ```kotlin
 maven {
@@ -41,51 +52,85 @@ maven {
 }
 ```
 
-> - Replace `username` with your GitHub username  
-> - Replace `password` with your GitHub Personal Access Token  
-> - See: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-gradle-registry  
-
 ---
 
 ### 2. Add Dependency
-
-Add the dependency to your module:
 
 ```kotlin
 implementation("com.solum.display:system-manager:{version}")
 ```
 
-👉 Latest version:  
-https://github.com/solum-signage-system/cms-system-controller/packages/2142218
-
----
-
-### 3. Grant Required Permissions
-
-To use the DeviceAPI, one of the following conditions must be met:
-
-- Installed via CMS Play Wizard
-- Explicitly granted permission using:
-
-```bash
-cmd solum.platform grant-system-acess
+```xml
+<dependency>
+  <groupId>com.solum.display</groupId>
+  <artifactId>system-manager</artifactId>
+  <version>{version}</version>
+</dependency>
 ```
 
-- Permission delegated via `Package.requestGrantSystemAccess`
+---
+
+### 3. Grant Permissions
+
+To use DeviceAPI, one of the following is required:
+
+- Install via CMS Play Wizard
+- Request permission via API:
+
+```kotlin
+Package.requestGrantSystemAccess(...)
+```
 
 ---
 
-### 4. Verify Installed Version (Optional)
+### 4. Verify Grant Status
+
+```kotlin
+val pkg = context.packageName
+val granted = Package.checkGrantSystemAccess(context, pkg)
+if (!granted) {
+    Package.requestGrantSystemAccess(context, pkg)
+}
+```
+
+---
+
+### 5. Verify Installed Version
 
 ```bash
 adb shell dumpsys package com.solum.display.system | grep versionName
 ```
+
 ![version](images/version.png)
 
 ---
 
-## 📢 Notes
+## FAQ
 
-- This API requires system-level privileges
-- Not all features are available on standard Android devices
-- Intended for internal use or authorized partners only
+### Where can I check the latest version?
+
+https://github.com/solum-signage-system/cms-system-controller/packages/2142218
+
+---
+
+### Can this be used on general Android devices?
+
+No. It works only on the SOLUM platform.
+
+---
+
+### Does it behave the same on all devices?
+
+No. Full support is available from 2025 production models.
+
+---
+
+### Is the permission persistent?
+
+The permission remains until the device is factory reset.
+
+---
+
+### What should I do if permission fails?
+
+Reinstall the application using CMS Play Wizard and verify again.
